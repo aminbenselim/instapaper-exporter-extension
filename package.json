@@ -30,7 +30,6 @@
     "grunt-contrib-copy": "1.0.0",
     "grunt-contrib-watch": "1.0.0",
     "lodash": "4.15.0",
-    "node-sass": "3.8.0",
     "script-loader": "0.7.0",
     "webpack": "1.13.2"
   },
