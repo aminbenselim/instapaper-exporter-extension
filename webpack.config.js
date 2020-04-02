@@ -23,7 +23,7 @@ config = {
     loaders: [
       {
         test: /\.(jsx|js)?$/,
-        loader: "babel",
+        loader: "babel-loader",
         exclude: /(node_modules|dist|external)/
       }
     ]
@@ -32,6 +32,9 @@ config = {
     configFile: path.join(__dirname, ".eslintrc.js")
   },
   plugins: [
+    new webpack.ProvidePlugin({
+      jquery: "jquery"
+    }),
     new webpack.DefinePlugin({
       "process.env": {
         NODE_ENV: '"' + process.env.NODE_ENV + '"'
@@ -47,14 +50,5 @@ config = {
     extensions: ["", ".js", ".jsx", ".css"]
   }
 };
-
-if (process.env.NODE_ENV === "production") {
-  config.plugins.push(
-    new webpack.optimize.UglifyJsPlugin({
-      compress: { warnings: false },
-      sourceMap: false
-    })
-  );
-}
 
 module.exports = config;

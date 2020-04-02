@@ -27,7 +27,8 @@
     "https://www.instapaper.com/",
     "downloads",
     "tabs",
-    "clipboardWrite"
+    "clipboardWrite",
+    "storage"
   ],
   "icons": {
     "16": "assets/images/icon-16.png",

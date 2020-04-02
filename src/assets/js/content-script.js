@@ -1,10 +1,28 @@
-"use strict";
-import $ from "jquery";
 let highlights = [];
 let page = 1;
 
-function processJSON(highlights) {
+async function digestMessage(message) {
+  const msgUint8 = new TextEncoder().encode(message); // encode as (utf-8) Uint8Array
+  const hashBuffer = await crypto.subtle.digest("SHA-256", msgUint8); // hash the message
+  const hashArray = Array.from(new Uint8Array(hashBuffer)); // convert buffer to byte array
+  const hashHex = hashArray.map(b => b.toString(16).padStart(2, "0")).join(""); // convert bytes to hex string
+  return hashHex;
+}
+
+const getFromStorage = keys =>
+  new Promise((resolve, reject) =>
+    chrome.storage.local.get(...keys, result => resolve(result))
+  );
+
+const setToStorage = (key, value) =>
+  new Promise((resolve, reject) =>
+    chrome.storage.local.set({ [key]: value }, result => resolve(result))
+  );
+
+async function processJSON(highlights) {
   const docs = {};
+  const progress = document.querySelector(".instapaper-exporter-progress");
+
   highlights.forEach(entry => {
     if (!docs[entry.source]) {
       docs[entry.source] = { entry, text: "" };
@@ -28,16 +46,45 @@ function processJSON(highlights) {
     }
   });
   let roamOutput = [];
-  Object.keys(docs).forEach(source => {
-    roamOutput.push(
-      `- [[${docs[source].entry.title}]] - [link](${
-        docs[source].entry.source
-      }) #instapaper\n${docs[source].text}`
-    );
-  });
+
+  let newCount = 0;
+  let changedCount = 0;
+
+  await Promise.all(
+    Object.keys(docs).map(async source => {
+      const existingHash = await getFromStorage([source]);
+      const newHash = await digestMessage(docs[source].text);
+      await setToStorage(source, newHash);
+      let changed = false;
+      if (existingHash[source]) {
+        if (existingHash[source] === newHash) {
+          return;
+        } else {
+          changed = true;
+          changedCount += 1;
+        }
+      } else {
+        newCount += 1;
+      }
+
+      roamOutput.push(
+        `- [[${docs[source].entry.title}]] - [link](${
+          docs[source].entry.source
+        }) #instapaper${changed ? " #instapaper-updated" : ""}\n${
+          docs[source].text
+        }`
+      );
+    })
+  );
   navigator.clipboard.writeText(roamOutput.join("\n"));
-  // can't display this immediately, because it will stop the clipboard from working
-  window.setTimeout(() => window.alert("Clippings copied to clipboard"), 2000);
+
+  progress.innerHTML = `<div>Clippings exported to clipboard. Processed ${
+    Object.keys(docs).length
+  } articles, and extracted ${newCount} new articles, and ${changedCount} changed articles.<br><i><a href="#" id="clear-storage">Click to clear storage</a></i></div>`;
+  document.getElementById("clear-storage").addEventListener("click", () => {
+    chrome.storage.local.clear();
+    progress.innerHTML = "<div>Storage cleared</div>";
+  });
 }
 
 function scrapePage(parent) {
@@ -70,7 +117,7 @@ function scrapePage(parent) {
 
 function scrapeNextPage(url) {
   page++;
-  let $box = $("<div />");
+  let $box = jquery("<div />");
   $box.load(`${url} #main_content`, () => {
     scrapePage($box.get(0));
   });
@@ -78,7 +125,8 @@ function scrapeNextPage(url) {
 
 function sendHighlights(highlights) {
   let progress = document.querySelector(".instapaper-exporter-progress");
-  document.body.removeChild(progress);
+  progress.textContent = "Processing ...";
+
   processJSON(highlights);
 }
 
