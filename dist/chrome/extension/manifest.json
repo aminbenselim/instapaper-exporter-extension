@@ -26,7 +26,8 @@
   "permissions": [
     "https://www.instapaper.com/",
     "downloads",
-    "tabs"
+    "tabs",
+    "clipboardWrite"
   ],
   "icons": {
     "16": "assets/images/icon-16.png",
