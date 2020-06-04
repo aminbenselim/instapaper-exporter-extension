@@ -23,7 +23,7 @@ async function processJSON(highlights) {
   const docs = {};
   const progress = document.querySelector(".instapaper-exporter-progress");
 
-  highlights.forEach(entry => {
+  highlights.reverse().forEach(entry => {
     if (!docs[entry.source]) {
       docs[entry.source] = { entry, text: "" };
     }
