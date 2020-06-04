@@ -1,10 +1,11 @@
 # Instapaper highlights exporter
 
-A simple Chrome extension that adds a button to your browser toolbar which, when clicked, will export your Instapaper highlights as an HTML page (with JSON output included).
+A simple Chrome extension that adds a button to your browser toolbar which, when clicked, will export your Instapaper highlights to Roam or another bullet outliner.
 
 ## Usage
 
-1. [Install the extension](https://chrome.google.com/webstore/detail/instapaper-highlights-exp/oiklmlodhebcmaijgmheoafagfhbeohm) if you haven't already.
-1. Visit [instapaper.com/notes](https://instapaper.com/notes) and make sure you're logged in.
+1. Clone or download the repository.
+1. Load unpacked extension into Chrome.
 1. Click the extension's browser button
-1. Save the exported file
+1. It will automatically open your Instapaper (you must already be logged in), go through all the pages, and finally export all new or changed annotations. It will keep track of which annotations have already been exported - there is a button to clear the cache.
+1. Open Roam (or Workflowy, etc) and paste.
